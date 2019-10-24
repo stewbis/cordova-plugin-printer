@@ -34,6 +34,13 @@ import static android.print.PrintAttributes.DUPLEX_MODE_SHORT_EDGE;
 import static android.print.PrintAttributes.Margins.NO_MARGINS;
 import static android.print.PrintAttributes.MediaSize.UNKNOWN_LANDSCAPE;
 import static android.print.PrintAttributes.MediaSize.UNKNOWN_PORTRAIT;
+import static android.print.PrintAttributes.MediaSize.ISO_A1;
+import static android.print.PrintAttributes.MediaSize.ISO_A2;
+import static android.print.PrintAttributes.MediaSize.ISO_A3;
+import static android.print.PrintAttributes.MediaSize.ISO_A4;
+import static android.print.PrintAttributes.MediaSize.ISO_A5;
+import static android.print.PrintAttributes.MediaSize.NA_LETTER;
+import static android.print.PrintAttributes.MediaSize.NA_LEGAL;
 import static android.print.PrintDocumentInfo.PAGE_COUNT_UNKNOWN;
 import static android.support.v4.print.PrintHelper.ORIENTATION_LANDSCAPE;
 import static android.support.v4.print.PrintHelper.ORIENTATION_PORTRAIT;
@@ -90,16 +97,24 @@ class PrintOptions
     {
         PrintAttributes.Builder builder = new PrintAttributes.Builder();
         Object margin                   = spec.opt("margin");
-
-        switch (spec.optString("orientation"))
-        {
-            case "landscape":
-                builder.setMediaSize(UNKNOWN_LANDSCAPE);
-                break;
-            case "portrait":
-                builder.setMediaSize(UNKNOWN_PORTRAIT);
-                break;
-        }
+		String orientation              = spec.optString("orientation");
+		
+		if (spec.has("paperSize")) 
+		{
+			builder.setMediaSize(computeMediaSize("landscape".equals(orientation), spec.optString("paperSize")));
+		}
+		else 
+		{
+			switch (orientation)
+			{
+				case "landscape":
+					builder.setMediaSize(UNKNOWN_LANDSCAPE);
+					break;
+				case "portrait":
+					builder.setMediaSize(UNKNOWN_PORTRAIT);
+					break;
+			}
+		}			
 
         if (spec.has("monochrome"))
         {
@@ -175,4 +190,17 @@ class PrintOptions
             printer.setScaleMode(SCALE_MODE_FILL);
         }
     }
+	
+	private @NonNull PrintAttributes.MediaSize computeMediaSize(boolean landscape, String paperSize) {
+		switch(paperSize) {
+			case "A1": return ISO_A1;
+			case "A2": return ISO_A2;
+			case "A3": return ISO_A3;
+			case "A4": return ISO_A4;
+			case "A5": return ISO_A5;
+			case "Letter": return NA_LETTER;
+			case "Legal": return NA_LEGAL;
+			default: return landscape ? UNKNOWN_LANDSCAPE : UNKNOWN_PORTRAIT;
+		}
+	}
 }
